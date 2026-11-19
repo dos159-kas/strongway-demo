@@ -307,7 +307,7 @@
 </div>
 
 <script type="module">
-	import { startPlaygroundWeb, login } from 'https://playground.wordpress.net/client/index.js';
+	import { startPlaygroundWeb, login } from './client/index.js';
 	import { ProgressTracker } from 'https://cdn.jsdelivr.net/npm/@php-wasm/progress@3.1.65/+esm';
 
 	const $ = ( id ) => document.getElementById( id );
@@ -359,7 +359,7 @@
 	const zip = new URL( 'snapshot.zip', location.href ).href;
 	const blueprint = {
 		landingPage: '/',
-		preferredVersions: { php: '8.3', wp: 'latest' },
+		preferredVersions: { php: '8.3', wp: '7.1' },
 		login: false,
 		steps: [
 			{ step: 'importWordPressFiles', wordPressFilesZip: { resource: 'url', url: zip } },
@@ -378,7 +378,7 @@
 	try {
 		const client = await startPlaygroundWeb( {
 			iframe,
-			remoteUrl: 'https://playground.wordpress.net/remote.html',
+			remoteUrl: new URL( 'remote.html', location.href ).href,
 			blueprint,
 			progressTracker: tracker,
 			disableProgressBar: true,

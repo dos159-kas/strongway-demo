@@ -1,0 +1,2 @@
+function e(n){return n.pathname.startsWith("/scope:")}function a(n){return e(n)?n.pathname.split("/")[1].split(":")[1]:null}const t={},r=new URL("/",(import.meta||{}).url),o=r.origin,p=t.VITE_WORDPRESS_SITE_URL?new URL(t.VITE_WORDPRESS_SITE_URL).origin:r.hostname==="playground.localhost"?o.replace("://playground.","://wp.playground."):o;export{a as g,o as p,p as w};
+//# sourceMappingURL=config-BQcP96nJ.js.map

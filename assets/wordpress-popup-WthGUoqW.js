@@ -1,0 +1,2 @@
+import"./modulepreload-polyfill-B5Qt9EMX.js";import{g as t,w as o}from"./config-BQcP96nJ.js";function n({allowLoopbackNetwork:a=!1}={}){const e=t(new URL(location.href))?new URL(location.pathname+location.search+location.hash,o):new URL(location.hash.substring(1),o);if(e.origin!==o||!t(e))throw new Error("The popup URL must name a scoped WordPress page.");const r=document.querySelector("#wp");a&&(r.allow=`loopback-network ${o}`),r.src=e.href}n();
+//# sourceMappingURL=wordpress-popup-WthGUoqW.js.map

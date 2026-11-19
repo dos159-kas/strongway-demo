@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Strongway · Demo store</title>
+<meta name="description" content="A working demo of the new Strongway Tools store, running privately in your browser.">
+<link rel="icon" href="favicon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Space+Grotesk:wght@500&display=swap" rel="stylesheet">
+<style>
+	:root {
+		--bg: #161617;
+		--surface: #222223;
+		--line: #2a2a2a;
+		--text: #ffffff;
+		--text-2: #d0d0d1;
+		--text-3: #a2a2a2;
+		--muted: #737374;
+		--font-sans: "Inter Tight", system-ui, sans-serif;
+		--font-label: "Space Grotesk", system-ui, sans-serif;
+		--strip-h: 36px;
+		--ease: cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	* { box-sizing: border-box; }
+
+	html, body {
+		height: 100%;
+		margin: 0;
+		background: var(--bg);
+		color: var(--text);
+		font-family: var(--font-sans);
+		-webkit-font-smoothing: antialiased;
+	}
+
+	.label {
+		font-family: var(--font-label);
+		font-size: 12px;
+		font-weight: 500;
+		letter-spacing: 0.05em;
+		line-height: 16px;
+		text-transform: uppercase;
+	}
+
+	/* ---------- Loading screen ---------- */
+	.loader {
+		position: fixed;
+		inset: 0;
+		z-index: 2;
+		display: grid;
+		place-items: center;
+		padding: 24px 16px;
+		background: var(--bg);
+		transition: opacity 600ms var(--ease), visibility 0s linear 600ms;
+	}
+
+	.loader.is-done {
+		opacity: 0;
+		visibility: hidden;
+	}
+
+	.loader__inner {
+		width: min(440px, 100%);
+	}
+
+	.loader__mark {
+		margin: 0 0 8px;
+		padding-left: 0.18em;
+		font-size: 26px;
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		line-height: 32px;
+		text-align: center;
+		text-transform: uppercase;
+	}
+
+	.loader__sub {
+		margin: 0 0 40px;
+		color: var(--text-3);
+		text-align: center;
+	}
+
+	.bar {
+		position: relative;
+		height: 2px;
+		margin-bottom: 12px;
+		overflow: hidden;
+		background: var(--line);
+	}
+
+	.bar__fill {
+		position: absolute;
+		inset: 0;
+		background: var(--text);
+		transform: scaleX(var(--p, 0));
+		transform-origin: left;
+		transition: transform 400ms var(--ease);
+	}
+
+	.bar-meta {
+		display: flex;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: 32px;
+		color: var(--text-3);
+	}
+
+	.bar-meta__detail {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		text-transform: none;
+		letter-spacing: 0;
+	}
+
+	.steps {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		border-top: 1px solid var(--line);
+	}
+
+	.step {
+		display: grid;
+		grid-template-columns: 20px minmax(0, 1fr);
+		align-items: center;
+		gap: 14px;
+		padding: 14px 0;
+		border-bottom: 1px solid var(--line);
+		color: var(--muted);
+		font-size: 15px;
+		line-height: 21px;
+		transition: color 300ms var(--ease);
+	}
+
+	.step__icon {
+		position: relative;
+		width: 20px;
+		height: 20px;
+		border: 1px solid var(--line);
+		border-radius: 50%;
+		transition: border-color 300ms var(--ease), background-color 300ms var(--ease);
+	}
+
+	.step.is-active { color: var(--text); }
+
+	.step.is-active .step__icon {
+		border-color: var(--text);
+	}
+
+	.step.is-active .step__icon::after {
+		content: "";
+		position: absolute;
+		inset: 5px;
+		border-radius: 50%;
+		background: var(--text);
+		animation: pulse 1.2s ease-in-out infinite;
+	}
+
+	.step.is-done { color: var(--text-2); }
+
+	.step.is-done .step__icon {
+		border-color: var(--text);
+		background: var(--text) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23161617' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 10.2l2.6 2.6L14 7.4'/%3E%3C/svg%3E") center / 20px no-repeat;
+	}
+
+	@keyframes pulse {
+		0%, 100% { opacity: 1; transform: scale(1); }
+		50% { opacity: 0.35; transform: scale(0.7); }
+	}
+
+	.loader__note {
+		margin: 28px 0 0;
+		color: var(--muted);
+		font-size: 13px;
+		line-height: 19px;
+		text-align: center;
+	}
+
+	.loader__error[hidden] { display: none; }
+
+	.loader__error {
+		margin-top: 28px;
+		padding: 20px;
+		border: 1px solid var(--line);
+		border-radius: 6px;
+		background: var(--surface);
+		color: var(--text-2);
+		font-size: 15px;
+		line-height: 21px;
+	}
+
+	.loader__error p { margin: 0 0 16px; }
+
+	.button {
+		display: inline-flex;
+		align-items: center;
+		min-height: 40px;
+		padding: 0 16px;
+		border: 0;
+		border-radius: 4px;
+		background: var(--text);
+		color: var(--bg);
+		cursor: pointer;
+	}
+
+	/* ---------- Demo strip + store ---------- */
+	.strip {
+		position: fixed;
+		inset: 0 0 auto;
+		z-index: 1;
+		display: flex;
+		align-items: center;
+		gap: 16px;
+		height: var(--strip-h);
+		padding: 0 16px;
+		border-bottom: 1px solid var(--line);
+		background: #0e0e0f;
+		color: var(--text-3);
+	}
+
+	.strip__tag { color: var(--text); flex: none; }
+
+	.strip__text {
+		min-width: 0;
+		overflow: hidden;
+		font-size: 13px;
+		line-height: 16px;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.strip__action {
+		flex: none;
+		margin-left: auto;
+		padding: 4px 0;
+		border: 0;
+		background: none;
+		color: var(--text);
+		cursor: pointer;
+		text-decoration: underline;
+		text-underline-offset: 4px;
+	}
+
+	.strip__action[disabled] { opacity: 0.4; cursor: default; }
+
+	.store {
+		position: fixed;
+		inset: var(--strip-h) 0 0;
+		width: 100%;
+		height: calc(100% - var(--strip-h));
+		border: 0;
+		background: var(--bg);
+	}
+
+	.short { display: none; }
+
+	@media (max-width: 640px) {
+		.long { display: none; }
+		.short { display: inline; }
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		*, *::before, *::after { animation: none !important; transition: none !important; }
+	}
+</style>
+</head>
+<body>
+
+<div class="strip" role="note">
+	<span class="strip__tag label">Demo store</span>
+	<span class="strip__text"><span class="long">Running privately in your browser. Orders, messages and accounts aren't sent anywhere, and reset when you reload.</span><span class="short">Runs in your browser. Nothing is sent.</span></span>
+	<button class="strip__action label" id="admin-toggle" type="button" disabled>See the dashboard</button>
+</div>
+
+<iframe class="store" id="store" title="Strongway Tools demo store"></iframe>
+
+<div class="loader" id="loader" role="status" aria-live="polite">
+	<div class="loader__inner">
+		<p class="loader__mark">Strongway</p>
+		<p class="loader__sub label">Opening the demo store</p>
+
+		<div class="bar" aria-hidden="true"><div class="bar__fill" id="bar"></div></div>
+		<div class="bar-meta label">
+			<span class="bar-meta__detail" id="detail">Getting ready</span>
+			<span id="percent">0%</span>
+		</div>
+
+		<ol class="steps" id="steps">
+			<li class="step is-active"><span class="step__icon" aria-hidden="true"></span><span>Starting a private server in your browser</span></li>
+			<li class="step"><span class="step__icon" aria-hidden="true"></span><span>Loading WordPress and WooCommerce</span></li>
+			<li class="step"><span class="step__icon" aria-hidden="true"></span><span>Unpacking 175 tools, photos and pages</span></li>
+			<li class="step"><span class="step__icon" aria-hidden="true"></span><span>Opening the shop</span></li>
+		</ol>
+
+		<p class="loader__note">The first visit takes about 20 to 40 seconds. Nothing is installed, and nothing leaves your computer.</p>
+
+		<div class="loader__error" id="error" hidden>
+			<p>The demo couldn't start. It works best in a recent Chrome, Safari, Edge or Firefox on a computer.</p>
+			<button class="button label" type="button" onclick="location.reload()">Try again</button>
+		</div>
+	</div>
+</div>
+
+<script type="module">
+	import { startPlaygroundWeb, login } from 'https://playground.wordpress.net/client/index.js';
+	import { ProgressTracker } from 'https://cdn.jsdelivr.net/npm/@php-wasm/progress@3.1.65/+esm';
+
+	const $ = ( id ) => document.getElementById( id );
+	const steps = [ ...$( 'steps' ).children ];
+	let current = 0;
+	let shown = 0;
+
+	// Steps only move forward, so a stray caption never sends the list backwards.
+	function goTo( index ) {
+		if ( index <= current ) return;
+		current = Math.min( index, steps.length - 1 );
+		steps.forEach( ( li, i ) => {
+			li.classList.toggle( 'is-done', i < current );
+			li.classList.toggle( 'is-active', i === current );
+		} );
+	}
+
+	function setProgress( value ) {
+		shown = Math.max( shown, Math.min( 100, value ) ); // never moves backwards
+		$( 'bar' ).style.setProperty( '--p', ( shown / 100 ).toFixed( 3 ) );
+		$( 'percent' ).textContent = Math.round( shown ) + '%';
+	}
+
+	// Playground's own captions, matched to the four plain-English steps.
+	function stepFor( caption ) {
+		const c = caption.toLowerCase();
+		if ( /unpacking|extracting|installing wordpress files|site url|importing/.test( c ) ) return 2;
+		if ( /download|fetch|booting|installer|php|wordpress|mb|kb/.test( c ) ) return 1;
+		return 0;
+	}
+
+	function detailFor( caption ) {
+		const m = caption.match( /^Extracting (\d+)\/(\d+)/ );
+		if ( m ) return `Unpacking files ${ Number( m[ 1 ] ).toLocaleString() } of ${ Number( m[ 2 ] ).toLocaleString() }`;
+		return caption.replace( /\s+/g, ' ' ).trim();
+	}
+
+	const tracker = new ProgressTracker();
+	tracker.addEventListener( 'progress', ( e ) => {
+		const { progress = 0, caption = '' } = e.detail || {};
+		// The last 8% is kept for opening the first page.
+		setProgress( progress * 0.92 );
+		if ( caption ) {
+			goTo( stepFor( caption ) );
+			$( 'detail' ).textContent = detailFor( caption );
+		}
+	} );
+
+	const zip = new URL( 'snapshot.zip', location.href ).href;
+	const blueprint = {
+		landingPage: '/',
+		preferredVersions: { php: '8.3', wp: 'latest' },
+		login: false,
+		steps: [
+			{ step: 'importWordPressFiles', wordPressFilesZip: { resource: 'url', url: zip } },
+			{
+				// If Playground's WordPress is newer than the snapshot, finish its database update now, so the
+				// dashboard opens straight away instead of asking for one.
+				step: 'runPHP',
+				code: "<?php require '/wordpress/wp-load.php'; require_once ABSPATH . 'wp-admin/includes/upgrade.php'; if ( (int) get_option( 'db_version' ) !== (int) $GLOBALS['wp_db_version'] ) { wp_upgrade(); }",
+			},
+		],
+	};
+
+	const iframe = $( 'store' );
+	const adminToggle = $( 'admin-toggle' );
+
+	try {
+		const client = await startPlaygroundWeb( {
+			iframe,
+			remoteUrl: 'https://playground.wordpress.net/remote.html',
+			blueprint,
+			progressTracker: tracker,
+			disableProgressBar: true,
+			detailedProgressCaptions: true,
+		} );
+
+		goTo( 3 );
+		$( 'detail' ).textContent = 'Opening the home page';
+		await client.isReady();
+		setProgress( 100 );
+		goTo( 4 );
+		steps.forEach( ( li ) => { li.classList.remove( 'is-active' ); li.classList.add( 'is-done' ); } );
+		setTimeout( () => $( 'loader' ).classList.add( 'is-done' ), 500 );
+
+		// "See the dashboard": signs in as the demo's admin (inside this browser only) and opens WordPress admin.
+		let inAdmin = false;
+		let signedIn = false;
+		adminToggle.disabled = false;
+		adminToggle.addEventListener( 'click', async () => {
+			adminToggle.disabled = true;
+			try {
+				if ( ! inAdmin ) {
+					if ( ! signedIn ) {
+						await login( client, { username: 'admin', password: 'password' } );
+						signedIn = true;
+					}
+					await client.goTo( '/wp-admin/edit.php?post_type=product' );
+					adminToggle.textContent = 'Back to the store';
+				} else {
+					await client.goTo( '/' );
+					adminToggle.textContent = 'See the dashboard';
+				}
+				inAdmin = ! inAdmin;
+			} finally {
+				adminToggle.disabled = false;
+			}
+		} );
+	} catch ( error ) {
+		console.error( error );
+		$( 'error' ).hidden = false;
+		steps[ current ].classList.remove( 'is-active' );
+	}
+</script>
+</body>
+</html>
